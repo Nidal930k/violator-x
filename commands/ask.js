@@ -6,7 +6,9 @@ module.exports = {
   async execute(message, args) {
     if (!args.length) return message.reply("💢 T’as oublié de poser une vraie question, abruti.");
 
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY }); // déplacer ici !
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    });
 
     const prompt = args.join(" ");
     try {
@@ -29,8 +31,8 @@ module.exports = {
       const reply = chat.choices[0].message.content;
       message.channel.send(`🧠 **Violator IA :**\n${reply}`);
     } catch (err) {
-      console.error("Erreur OpenAI:", err.response?.data || err.message || err);
-      message.reply("💥 Violator a crashé. Faut croire que ta question était trop conne.");
+      console.error("🧠 Erreur dans !ask :", err.response?.data || err.message || err);
+      return message.reply("💥 Violator a crashé. Faut croire que ta question était trop conne.");
     }
   }
 };
