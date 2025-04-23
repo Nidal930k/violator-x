@@ -1,33 +1,34 @@
-
 const { EmbedBuilder } = require('discord.js');
-const logToChannel = require('../utils/logToChannel');
-const config = require("../config.json");
+const config = require('../configViolator.json');
+const owners = require('../data/owners.json');
 
 module.exports = {
-  name: 'annonce',
-  description: 'Envoie une annonce stylée dans le salon "annonces" avec @everyone',
+  name: "annonce",
+  description: "Fait une annonce stylée dans le salon 'annonces' avec @everyone",
   async execute(message, args) {
-    const allowedRoles = ['Admin', 'Staff', 'Modération'];
-
-    if (!config.owners.includes(message.author.id) &&
-        !message.member.roles.cache.some(role => allowedRoles.includes(role.name))) {
-      return message.reply("❌ Commande verrouillée. Seuls les agents de l’ordre Violator peuvent l’utiliser.");
+    if (!owners.owners.includes(message.author.id)) {
+      return message.reply("❌ T’as pas la permission d’utiliser cette commande.");
     }
 
-    const content = args.join(" ");
-    if (!content) return message.reply("🗣️ Tu veux balancer quoi comme message ? Tape une vraie annonce.");
+    const annonceText = args.join(" ");
+    if (!annonceText) return message.reply("❗ Tu dois écrire une annonce à envoyer.");
+
+    const salonAnnonce = message.guild.channels.cache.find(c => c.name === "annonces" && c.isTextBased());
+    if (!salonAnnonce) return message.reply("❌ Aucun salon nommé 'annonces' trouvé.");
 
     const embed = new EmbedBuilder()
       .setTitle("📢 Annonce Officielle")
-      .setDescription(content)
+      .setDescription(annonceText)
       .setColor(0xff0000)
-      .setFooter({ text: `Violator • Par ${message.author.tag}` })
+      .setFooter({ text: `Envoyée par ${message.author.username}` })
       .setTimestamp();
 
-    const targetChannel = message.guild.channels.cache.find(ch => ch.name === "annonces");
-    if (!targetChannel) return message.reply("❌ Salon 'annonces' introuvable.");
-
-    targetChannel.send({ content: "@everyone", embeds: [embed] });
-    logToChannel(message, `📢 Annonce @everyone postée par ${message.author.tag} : "${content}"`);
+    try {
+      await salonAnnonce.send({ content: "@everyone", embeds: [embed] });
+      message.reply("✅ Annonce envoyée avec succès dans #annonces.");
+    } catch (err) {
+      console.error("Erreur envoi annonce :", err);
+      message.reply("💥 Une erreur est survenue lors de l’envoi de l’annonce.");
+    }
   }
 };

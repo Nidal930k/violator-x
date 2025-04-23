@@ -1,1 +1,9 @@
-{ "antilien": true }
+
+{
+  "antilien": true,
+  "antiraid": false,
+  "antibot": true,
+  "antiwebhook": false,
+  "botclean": false,
+  "autolock": false
+}

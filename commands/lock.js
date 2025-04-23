@@ -1,32 +1,19 @@
-
-const logToChannel = require('../utils/logToChannel');
-
 module.exports = {
   name: 'lock',
-  description: 'Verrouille le salon',
+  description: '🔒 Verrouille le salon pour empêcher les messages.',
   async execute(message) {
-    const config = require("../config.json");
-    const allowedRoles = ['Admin', 'Staff', 'Modération'];
-
-    if (!config.owners.includes(message.author.id) &&
-        !message.member.roles.cache.some(role => allowedRoles.includes(role.name))) {
-      return message.reply("❌ Commande verrouillée. Seuls les agents de l’ordre Violator peuvent l’utiliser.");
+    if (!message.member.permissions.has("ManageChannels")) {
+      return message.reply("🚫 T'as pas le droit de verrouiller ce salon, zgeg.");
     }
 
-    await message.channel.permissionOverwrites.edit(message.guild.roles.everyone, {
-      SendMessages: false
-    });
-
-    const phrases = [
-      "🔒 Fermez-la. Ce salon est maintenant sous scellé.",
-      "🤐 Vous parlez trop. Violator a verrouillé la zone.",
-      "🚫 Silence imposé. L’ordre a parlé.",
-      "🧱 Plus un mot ici. C’est fermé.",
-      "📛 Ce canal est OFF. Vos bouches aussi."
-    ];
-    const reply = phrases[Math.floor(Math.random() * phrases.length)];
-    message.channel.send(reply);
-
-    logToChannel(message, `🔒 ${message.author.tag} a verrouillé le salon #${message.channel.name}`);
+    try {
+      await message.channel.permissionOverwrites.edit(message.guild.roles.everyone, {
+        SendMessages: false
+      });
+      message.channel.send("🔒 Ce salon est maintenant verrouillé. Personne n’écrit sans ton autorisation !");
+    } catch (err) {
+      console.error(err);
+      message.reply("💥 Violator a failé le verrouillage... permissions manquantes ?");
+    }
   }
 };

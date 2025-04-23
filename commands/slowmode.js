@@ -1,22 +1,16 @@
-const logToChannel = require('../utils/logToChannel');
 
 module.exports = {
-  name: 'slowmode',
-  description: 'Commande slowmode',
+  name: "slowmode",
+  description: "Active le slowmode dans le salon.",
   async execute(message, args) {
-    const amount = parseInt(args[0]);
-    if (isNaN(amount) || amount <= 0 || amount > 100)
-      return message.reply("❌ Donne un nombre valide entre 1 et 100.");
-
-    await message.channel.bulkDelete(amount, true)
-      .then(() => {
-        message.channel.send("🐢 Mode lent réglé sur ${amount} secondes.")
-          .then(msg => setTimeout(() => msg.delete(), 3000));
-        logToChannel(message, `✅ 🐢 Mode lent réglé sur ${amount} secondes. par ${message.author.tag}`);
-      })
-      .catch(err => {
-        console.error(err);
-        message.reply("❌ Impossible d'effectuer cette action.");
-      });
+    if (!message.member.permissions.has("ManageChannels")) {
+      return message.reply("❌ T'as pas les couilles pour ça.");
+    }
+    const seconds = parseInt(args[0]);
+    if (isNaN(seconds) || seconds < 0 || seconds > 21600) {
+      return message.reply("⏱️ Donne un temps entre 0 et 21600 secondes.");
+    }
+    await message.channel.setRateLimitPerUser(seconds);
+    message.channel.send(`💬 Mode lent activé à ${seconds} secondes. T’as intérêt à réfléchir avant de parler.`);
   }
 };

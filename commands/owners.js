@@ -1,19 +1,15 @@
-
-const { EmbedBuilder } = require('discord.js');
-const config = require("../config.json");
+const fs = require('fs');
+const owners = require('../data/owners.json');
 
 module.exports = {
-  name: 'owners',
-  description: 'Affiche la liste des owners actuels',
+  name: "owners",
+  description: "Affiche tous les utilisateurs avec les permissions du bot",
   async execute(message) {
-    const ownerMentions = config.owners.map(id => `<@${id}>`);
-    const embed = new EmbedBuilder()
-      .setTitle("👑 Liste des Owners Violator")
-      .setDescription(ownerMentions.join('\n') || "Aucun owner défini.")
-      .setColor(0xff0000)
-      .setFooter({ text: 'Violator Authority' })
-      .setTimestamp();
+    if (!owners.owners.includes(message.author.id)) {
+      return message.reply("❌ Tu n’as pas la permission d’utiliser cette commande.");
+    }
 
-    message.channel.send({ embeds: [embed] });
+    const mentions = owners.owners.map(id => `<@${id}>`).join("\n");
+    message.channel.send(`👑 **Owners autorisés :**\n${mentions}`);
   }
 };

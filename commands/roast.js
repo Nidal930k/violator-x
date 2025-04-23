@@ -1,23 +1,18 @@
 module.exports = {
   name: "roast",
-  description: "Insulte gentiment un utilisateur",
+  description: "Envoie une punchline stylée à un membre",
   async execute(message, args) {
     const target = message.mentions.users.first();
-    if (!target) {
-      return message.reply("👊 Tu veux roast qui ? Mentionne ta victime, clown.");
-    }
+    if (!target) return message.reply("❌ Mentionne quelqu’un que je dois humilier.");
 
     const roasts = [
-      "T'as le charisme d'une patate tiède, même Discord hésite à te charger.",
-      "Même ton miroir essaie de se déconnecter quand il te voit.",
-      "Ton cerveau tourne sous Windows 95, faut faire un update mon gars.",
-      "Si l'intelligence était une monnaie, t'aurais même pas de quoi t'offrir une pensée.",
-      "T'es pas nul, t'es un art. Un chef-d'œuvre de médiocrité.",
-      "J'ai vu des bots plus pertinents que toi, et eux au moins, ils crashent pas à chaque phrase."
+      "T’as pas un cerveau, t’as un espace vide entre les oreilles.",
+      "T’es tellement inutile que même ton ombre t’a quitté.",
+      "Si la bêtise était un sport, t’aurais l’or olympique.",
+      "T’es pas bête, t’es un chef-d’œuvre de stupidité.",
+      "On t’a déjà dit que t’étais spécial ? C’était pas un compliment."
     ];
-
-    const randomRoast = roasts[Math.floor(Math.random() * roasts.length)];
-
-    message.channel.send(`🔥 ${target}, ${randomRoast}`);
+    const roast = roasts[Math.floor(Math.random() * roasts.length)];
+    message.channel.send(`🔥 ${target}, ${roast}`);
   }
 };

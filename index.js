@@ -10,58 +10,27 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildVoiceStates
   ]
 });
 
 client.commands = new Collection();
 
-// Chargement des commandes
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
-  client.commands.set(command.name, command);
+  if (command.name) {
+    client.commands.set(command.name, command);
+  }
 }
 
-// Anti-lien (ne pas ajouter d'event ici !)
-let setupAntiLien;
-if (settings.antilien && fs.existsSync('./utils/antilien-listener.js')) {
-  setupAntiLien = require('./utils/antilien-listener');
-}
-
-// Ready
 client.once('ready', () => {
   console.log(`🔥 Violator est prêt à frapper. Connecté en tant que ${client.user.tag}`);
-  if (setupAntiLien) setupAntiLien(client); // ne s'active qu'une seule fois
 });
 
-// Unique listener messageCreate
 client.on('messageCreate', async message => {
-  if (message.author.bot || !message.guild) return;
-
-  // Antispam
-  if (fs.existsSync('./utils/antispam.js')) {
-    const antispam = require('./utils/antispam');
-    if (typeof antispam.execute === 'function') {
-      antispam.execute(message);
-    }
-  }
-
-  // XP system
-  const xpFile = path.join(__dirname, 'data', 'level.json');
-  let levels = fs.existsSync(xpFile) ? JSON.parse(fs.readFileSync(xpFile)) : {};
-  const id = message.author.id;
-  if (!levels[id]) levels[id] = { xp: 0, level: 1 };
-  levels[id].xp += 10;
-  if (levels[id].xp >= levels[id].level * 100) {
-    levels[id].xp = 0;
-    levels[id].level += 1;
-    message.channel.send(`💥 GG ${message.author.username}, t’es monté niveau ${levels[id].level} !`);
-  }
-  fs.writeFileSync(xpFile, JSON.stringify(levels, null, 2));
-
-  // Commandes
-  if (!message.content.startsWith(prefix)) return;
+  if (message.author.bot || !message.guild || !message.content.startsWith(prefix)) return;
   const args = message.content.slice(prefix.length).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
   const command = client.commands.get(commandName);
@@ -70,7 +39,7 @@ client.on('messageCreate', async message => {
   try {
     await command.execute(message, args, client);
   } catch (err) {
-    console.error("❌ Erreur dans la commande :", err);
+    console.error(err);
     message.reply("💥 Une erreur violente est survenue. Violator est en rage !");
   }
 });

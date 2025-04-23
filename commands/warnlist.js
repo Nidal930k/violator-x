@@ -1,24 +1,22 @@
+
 const fs = require('fs');
-const path = './warnings.json';
+const path = require('path');
 
 module.exports = {
   name: 'warnlist',
-  description: 'Affiche les warns d’un utilisateur',
-  execute(message, args) {
-    const user = message.mentions.users.first();
-    if (!user) return message.reply("❗ Utilisation : `!warnlist @user`");
+  description: 'Affiche la liste des warns',
+  async execute(message, args) {
+    const member = message.mentions.members.first();
+    if (!member) return message.reply("❗ Utilisation : !warnlist @user");
 
-    let warns = {};
-    if (fs.existsSync(path)) {
-      warns = JSON.parse(fs.readFileSync(path));
-    }
+    const warnsFile = path.join(__dirname, '../data/warns.json');
+    let warns = fs.existsSync(warnsFile) ? JSON.parse(fs.readFileSync(warnsFile)) : {};
 
-    const userWarns = warns[user.id];
-    if (!userWarns || userWarns.length === 0) {
+    if (!warns[member.id] || warns[member.id].length === 0) {
       return message.reply("✅ Aucun warn trouvé pour cet utilisateur.");
     }
 
-    const warnList = userWarns.map((w, i) => `#${i + 1} - ${w}`).join("\n");
-    message.channel.send(`📋 Warns pour ${user.tag} :\n${warnList}`);
+    const list = warns[member.id].map((w, i) => `#${i+1} - ${w.reason} (par ${w.mod})`).join("\n");
+    message.channel.send(`⚠️ Warns pour ${member.user.tag} :\n${list}`);
   }
 };
