@@ -29,7 +29,8 @@ module.exports = {
       });
 
       const reply = chat.choices[0].message.content;
-      message.channel.send(`🧠 **Violator IA :**\n${reply}`);
+      message.channel.send(`🧠 **Violator IA :**
+${reply}`);
     } catch (err) {
       console.error("🧠 Erreur dans !ask :", err.response?.data || err.message || err);
       return message.reply("💥 Violator a crashé. Faut croire que ta question était trop conne.");

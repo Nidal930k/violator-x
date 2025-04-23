@@ -1,4 +1,3 @@
-
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const fs = require('fs');
 const axios = require('axios');
@@ -6,6 +5,7 @@ require('dotenv').config();
 const { prefix } = require('./config.json');
 const settings = require('./configViolator.json');
 const path = require('path');
+const antiSpam = require('./utils/antispam');
 
 const client = new Client({
   intents: [
@@ -28,15 +28,11 @@ client.once('ready', () => {
   console.log(`🔥 Violator Supreme prêt à écraser le serveur.`);
 });
 
-// ANTI-LIEN listener si activé
-if (settings.antilien) {
-  const setupAntiLien = require('./utils/antilien-listener');
-  setupAntiLien(client);
-}
-
-// XP automatique + gestion des commandes
+// Listener unique pour tout gérer
 client.on('messageCreate', async message => {
   if (message.author.bot) return;
+
+  await antiSpam.execute(message);
 
   // XP auto
   const xpFile = path.join(__dirname, 'data/level.json');
@@ -67,6 +63,3 @@ client.on('messageCreate', async message => {
 });
 
 client.login(process.env.TOKEN);
-
-const antiSpam = require('./utils/antispam');
-client.on('messageCreate', antiSpam.execute);
