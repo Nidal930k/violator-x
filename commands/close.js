@@ -1,21 +1,22 @@
 module.exports = {
-  name: "close",
-  description: "Ferme un ticket",
+  name: 'close',
+  description: 'Ferme un ticket',
   async execute(message) {
-    const isTicket = message.channel.name?.startsWith("ticket-") || message.channel.isThread?.();
+    const channel = message.channel;
 
-    if (!isTicket) {
-      return message.reply("❌ Ce n’est pas un salon de ticket !");
+    // Vérifie si c'est un ticket
+    if (!channel.name.startsWith("ticket-")) {
+      return message.reply("❌ Tu dois être dans un salon ticket pour faire ça, guignol.");
     }
 
     try {
-      await message.channel.send("🔒 Ticket fermé. Ce salon va s’autodétruire dans 3 secondes...");
+      await message.channel.send("🔒 Ticket fermé. Dossier classé.");
       setTimeout(() => {
-        message.channel.delete().catch(console.error);
-      }, 3000);
-    } catch (error) {
-      console.error("Erreur en fermant le ticket :", error);
-      message.reply("💥 Impossible de fermer ce ticket, l’univers te protège.");
+        channel.delete().catch(err => console.error("Erreur lors de la suppression :", err));
+      }, 3000); // délai de 3 secondes pour laisser le message visible
+    } catch (err) {
+      console.error("❌ Erreur dans !close :", err);
+      message.reply("💥 Une erreur est survenue lors de la fermeture du ticket.");
     }
   }
 };
