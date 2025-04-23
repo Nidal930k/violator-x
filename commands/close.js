@@ -1,18 +1,21 @@
 module.exports = {
-  name: 'close',
-  description: 'Commande close',
-  execute(message, args) {
-    const config = require("../config.json");
-    const allowedRoles = ['Admin', 'Staff', 'Modération'];
+  name: "close",
+  description: "Ferme un ticket",
+  async execute(message) {
+    const isTicket = message.channel.name?.startsWith("ticket-") || message.channel.isThread?.();
 
-    if (!config.owners.includes(message.author.id) &&
-        !message.member.roles.cache.some(role => allowedRoles.includes(role.name))) {
-      return message.reply("❌ Commande verrouillée. Seuls les agents de l’ordre Violator peuvent l’utiliser.");
+    if (!isTicket) {
+      return message.reply("❌ Ce n’est pas un salon de ticket !");
     }
 
-    const member = message.mentions.members.first();
-    if (!member) return message.reply("❌ Mentionne un membre.");
-
-    message.channel.send(`🔒 Ticket fermé. Dossier classé.`);
+    try {
+      await message.channel.send("🔒 Ticket fermé. Ce salon va s’autodétruire dans 3 secondes...");
+      setTimeout(() => {
+        message.channel.delete().catch(console.error);
+      }, 3000);
+    } catch (error) {
+      console.error("Erreur en fermant le ticket :", error);
+      message.reply("💥 Impossible de fermer ce ticket, l’univers te protège.");
+    }
   }
 };

@@ -1,11 +1,10 @@
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const fs = require('fs');
-const axios = require('axios');
+const path = require('path');
 require('dotenv').config();
+
 const { prefix } = require('./config.json');
 const settings = require('./configViolator.json');
-const path = require('path');
-const antiSpam = require('./utils/antispam');
 
 const client = new Client({
   intents: [
@@ -25,17 +24,27 @@ for (const file of commandFiles) {
 }
 
 client.once('ready', () => {
-  console.log(`🔥 Violator Supreme prêt à écraser le serveur.`);
+  console.log(`🔥 Violator prêt. Connecté en tant que ${client.user.tag}`);
 });
 
-// Listener unique pour tout gérer
+// Anti-lien si activé
+if (settings.antilien && fs.existsSync('./utils/antilien-listener.js')) {
+  const setupAntiLien = require('./utils/antilien-listener');
+  setupAntiLien(client);
+}
+
+// Anti-spam si le fichier existe
+if (fs.existsSync('./utils/antispam.js')) {
+  const antiSpam = require('./utils/antispam');
+  client.on('messageCreate', antiSpam.execute);
+}
+
+// XP automatique + gestion des commandes
 client.on('messageCreate', async message => {
-  if (message.author.bot) return;
+  if (message.author.bot || !message.guild) return;
 
-  await antiSpam.execute(message);
-
-  // XP auto
-  const xpFile = path.join(__dirname, 'data/level.json');
+  // XP
+  const xpFile = path.join(__dirname, 'data', 'level.json');
   let levels = fs.existsSync(xpFile) ? JSON.parse(fs.readFileSync(xpFile)) : {};
   const id = message.author.id;
   if (!levels[id]) levels[id] = { xp: 0, level: 1 };
@@ -55,7 +64,7 @@ client.on('messageCreate', async message => {
   if (!command) return;
 
   try {
-    await command.execute(message, args);
+    await command.execute(message, args, client);
   } catch (err) {
     console.error("❌ Erreur dans la commande :", err);
     message.reply("💥 Une erreur violente est survenue. Violator est en rage !");
