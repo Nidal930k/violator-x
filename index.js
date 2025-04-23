@@ -1,4 +1,3 @@
-
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
@@ -17,29 +16,38 @@ const client = new Client({
 
 client.commands = new Collection();
 
+// Chargement des commandes
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.name, command);
 }
 
-client.once('ready', () => {
-  console.log(`🔥 Violator prêt à frapper en tant que ${client.user.tag}`);
-});
-
+// Anti-lien (ne pas ajouter d'event ici !)
+let setupAntiLien;
 if (settings.antilien && fs.existsSync('./utils/antilien-listener.js')) {
-  const setupAntiLien = require('./utils/antilien-listener');
-  setupAntiLien(client);
+  setupAntiLien = require('./utils/antilien-listener');
 }
 
+// Ready
+client.once('ready', () => {
+  console.log(`🔥 Violator est prêt à frapper. Connecté en tant que ${client.user.tag}`);
+  if (setupAntiLien) setupAntiLien(client); // ne s'active qu'une seule fois
+});
+
+// Unique listener messageCreate
 client.on('messageCreate', async message => {
   if (message.author.bot || !message.guild) return;
 
+  // Antispam
   if (fs.existsSync('./utils/antispam.js')) {
     const antispam = require('./utils/antispam');
-    antispam.execute(message);
+    if (typeof antispam.execute === 'function') {
+      antispam.execute(message);
+    }
   }
 
+  // XP system
   const xpFile = path.join(__dirname, 'data', 'level.json');
   let levels = fs.existsSync(xpFile) ? JSON.parse(fs.readFileSync(xpFile)) : {};
   const id = message.author.id;
@@ -52,6 +60,7 @@ client.on('messageCreate', async message => {
   }
   fs.writeFileSync(xpFile, JSON.stringify(levels, null, 2));
 
+  // Commandes
   if (!message.content.startsWith(prefix)) return;
   const args = message.content.slice(prefix.length).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
