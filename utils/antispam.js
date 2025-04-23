@@ -1,12 +1,10 @@
+
 module.exports = {
-  async execute(message) {
-    if (message.content.includes("http")) {
-      try {
-        await message.delete();
-        message.channel.send("🔗 Stop à tes liens, parasite.");
-      } catch (err) {
-        console.error("Erreur antispam :", err);
-      }
+  name: 'antispam',
+  execute(message) {
+    if (message.content.length > 500) {
+      message.delete();
+      message.channel.send('🛑 Trop de spam ici, calme-toi.').then(m => setTimeout(() => m.delete(), 5000));
     }
   }
 };
