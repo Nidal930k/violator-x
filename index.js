@@ -16,7 +16,7 @@ const client = new Client({
 
 client.commands = new Collection();
 
-// Chargement des commandes
+// 🔁 Chargement des commandes
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
@@ -24,26 +24,26 @@ for (const file of commandFiles) {
 }
 
 client.once('ready', () => {
-  console.log(`🔥 Violator prêt. Connecté en tant que ${client.user.tag}`);
+  console.log(`🔥 Violator est prêt à frapper. Connecté en tant que ${client.user.tag}`);
 });
 
-// Anti-lien si activé
+// 🔗 Setup anti-lien si activé
 if (settings.antilien && fs.existsSync('./utils/antilien-listener.js')) {
   const setupAntiLien = require('./utils/antilien-listener');
   setupAntiLien(client);
 }
 
-// Anti-spam si le fichier existe
-if (fs.existsSync('./utils/antispam.js')) {
-  const antiSpam = require('./utils/antispam');
-  client.on('messageCreate', antiSpam.execute);
-}
-
-// XP automatique + gestion des commandes
+// 💬 Gestion globale des messages
 client.on('messageCreate', async message => {
   if (message.author.bot || !message.guild) return;
 
-  // XP
+  // ✅ Antispam (chargé proprement sans doublon)
+  if (fs.existsSync('./utils/antispam.js')) {
+    const antispam = require('./utils/antispam');
+    antispam.execute(message);
+  }
+
+  // 📈 XP auto
   const xpFile = path.join(__dirname, 'data', 'level.json');
   let levels = fs.existsSync(xpFile) ? JSON.parse(fs.readFileSync(xpFile)) : {};
   const id = message.author.id;
@@ -56,7 +56,7 @@ client.on('messageCreate', async message => {
   }
   fs.writeFileSync(xpFile, JSON.stringify(levels, null, 2));
 
-  // Commandes
+  // 📦 Commandes
   if (!message.content.startsWith(prefix)) return;
   const args = message.content.slice(prefix.length).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
