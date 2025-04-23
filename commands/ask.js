@@ -1,14 +1,12 @@
 const { OpenAI } = require("openai");
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
-
 module.exports = {
   name: "ask",
   description: "Pose une question à Violator IA (brutal et arrogant)",
   async execute(message, args) {
     if (!args.length) return message.reply("💢 T’as oublié de poser une vraie question, abruti.");
+
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY }); // déplacer ici !
 
     const prompt = args.join(" ");
     try {
@@ -31,7 +29,7 @@ module.exports = {
       const reply = chat.choices[0].message.content;
       message.channel.send(`🧠 **Violator IA :**\n${reply}`);
     } catch (err) {
-      console.error(err);
+      console.error("Erreur OpenAI:", err.response?.data || err.message || err);
       message.reply("💥 Violator a crashé. Faut croire que ta question était trop conne.");
     }
   }
